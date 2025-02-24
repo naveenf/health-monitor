@@ -167,38 +167,66 @@ class BloodParametersSection(QGroupBox):
         self.setLayout(main_layout)
 
     def _create_tooltip(self, param_name, param_info):
-        """Creates enhanced tooltip with more detailed information"""
+        """Creates enhanced tooltip with detailed information"""
+        # Create sections for the tooltip
+        tooltip_sections = []
+        
+        # Get basic metadata and clinical info
         metadata = param_info.get('metadata', {})
         clinical_info = param_info.get('clinical_info', {})
-
-        tooltip = []
-        tooltip.append(metadata.get('description', 'No description available'))
-        tooltip.append(f"\nFunction: {clinical_info.get('function', 'Not specified')}")
-
+        
+        # Add description
+        description = metadata.get('description')
+        if description:
+            tooltip_sections.append(description)
+        
+        # Add function if available
+        function = clinical_info.get('function')
+        if function:
+            tooltip_sections.append(f"\nFunction: {function}")
+        
         # Add common conditions
         conditions = clinical_info.get('common_conditions', {})
         if conditions:
-            tooltip.append("\nCommon conditions:")
+            tooltip_sections.append("\nCommon conditions:")
             if 'high' in conditions:
-                tooltip.append("High: " + ", ".join(conditions['high']))
+                high_conditions = ", ".join(conditions['high'])
+                tooltip_sections.append(f"High: {high_conditions}")
             if 'low' in conditions:
-                tooltip.append("Low: " + ", ".join(conditions['low']))
-
+                low_conditions = ", ".join(conditions['low'])
+                tooltip_sections.append(f"Low: {low_conditions}")
+        
         # Add test requirements
-        requirements = param_info.get('test_requirements', {})
-        if requirements:
-            tooltip.append("\nTest requirements:")
-            if requirements.get('fasting_required'):
-                tooltip.append(f"• Fasting required: {requirements['fasting_duration']} hours")
-            if requirements.get('special_requirements'):
-                tooltip.append("• " + "\n• ".join(requirements['special_requirements']))
-
-        # Add interfering factors
-        if 'interfering_factors' in requirements:
-            tooltip.append("\nInterfering factors:")
-            tooltip.append("• " + "\n• ".join(requirements['interfering_factors']))
-
-        return "\n".join(tooltip)
+        test_reqs = param_info.get('test_requirements', {})
+        if isinstance(test_reqs, dict):  # If test_requirements is a dictionary
+            if test_reqs:
+                tooltip_sections.append("\nTest requirements:")
+                if test_reqs.get('fasting_required'):
+                    tooltip_sections.append(f"• Fasting required: {test_reqs.get('fasting_duration', '')} hours")
+                if test_reqs.get('special_requirements'):
+                    for req in test_reqs['special_requirements']:
+                        tooltip_sections.append(f"• {req}")
+                
+                # Add interfering factors if present
+                interfering = test_reqs.get('interfering_factors', [])
+                if interfering:
+                    tooltip_sections.append("\nInterfering factors:")
+                    for factor in interfering:
+                        tooltip_sections.append(f"• {factor}")
+        elif isinstance(test_reqs, list):  # If test_requirements is a list
+            if test_reqs:
+                tooltip_sections.append("\nTest requirements:")
+                for req in test_reqs:
+                    tooltip_sections.append(f"• {req}")
+        
+        # Join all sections with newlines
+        tooltip_text = "\n".join(tooltip_sections)
+        
+        # If no content was added, provide a default message
+        if not tooltip_text:
+            tooltip_text = "No additional information available"
+        
+        return tooltip_text
 
     def get_values(self):
         """Returns dictionary of all parameter values"""

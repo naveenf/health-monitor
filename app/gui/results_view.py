@@ -176,6 +176,7 @@ class ResultsView(QWidget):
             # Add group header
             group_widget = QWidget()
             group_layout = QVBoxLayout(group_widget)
+            group_layout.setSpacing(2)  # Reduce spacing between items
 
             group_header = QLabel(group)
             group_header.setStyleSheet("""
@@ -188,8 +189,15 @@ class ResultsView(QWidget):
 
             # Add parameters
             for name, data in sorted(grouped_params[group]):
-                row_widget = QWidget()
-                row_layout = QHBoxLayout(row_widget)
+                # Create main parameter row
+                param_container = QWidget()
+                param_layout = QVBoxLayout(param_container)
+                param_layout.setSpacing(0)  # Minimal spacing between elements
+                param_layout.setContentsMargins(0, 0, 0, 5)  # Add bottom margin only
+
+                # Parameter values row
+                values_widget = QWidget()
+                row_layout = QHBoxLayout(values_widget)
                 row_layout.setContentsMargins(5, 2, 5, 2)
 
                 # Parameter name
@@ -222,7 +230,6 @@ class ResultsView(QWidget):
                 if value != 'N/A':
                     try:
                         value_float = float(value)
-                        # Pass the entire parameter data instead of just min/max values
                         status, color = self._get_status_and_color(value_float, data)
                     except (ValueError, TypeError) as e:
                         print(f"Error processing value for {name}: {e}")
@@ -235,51 +242,78 @@ class ResultsView(QWidget):
                 status_label.setFixedWidth(100)
                 row_layout.addWidget(status_label)
 
-                detail_widget = self._create_parameter_detail_widget(name, data)
-                row_layout.addWidget(detail_widget)
+                # Add the values row to the parameter container
+                param_layout.addWidget(values_widget)
 
-                group_layout.addWidget(row_widget)
+                # Add metadata if value is out of range
+                if status not in ["Normal", "No data", "Error"]:
+                    metadata_widget = self._create_parameter_detail_widget(name, data)
+                    if metadata_widget:
+                        param_layout.addWidget(metadata_widget)
+
+                # Add the complete parameter container to the group
+                group_layout.addWidget(param_container)
 
             self.layout.addWidget(group_widget)
 
 
     def _create_parameter_detail_widget(self, name, data):
-        """Creates an expandable detail widget for each parameter"""
+        """Creates a detail widget for out-of-range parameters"""
+        metadata = data.get('metadata', {})
+        clinical_info = data.get('clinical_info', {})
+        if not metadata and not clinical_info:
+            return None
+
         detail_widget = QWidget()
         detail_layout = QVBoxLayout(detail_widget)
+        detail_layout.setContentsMargins(20, 5, 5, 5)  # Add left indent and some vertical spacing
 
-        # Get metadata from parameter data
-        metadata = data.get('metadata', {})
-        clinical_info = metadata.get('clinical_info', {})
+        # Create sections container
+        sections_widget = QWidget()
+        sections_layout = QVBoxLayout(sections_widget)
+        sections_layout.setSpacing(8)  # Space between sections
 
-        # Create expandable sections
-        description = QLabel(metadata.get('description', ''))
-        description.setWordWrap(True)
-        description.setStyleSheet("color: #666666; font-style: italic;")
+        # Add description if available
+        if metadata.get('description'):
+            desc_label = QLabel(metadata['description'])
+            desc_label.setWordWrap(True)
+            desc_label.setStyleSheet("color: #666666; font-style: italic; font-size: 11px;")
+            sections_layout.addWidget(desc_label)
 
-        # Add common conditions if value is out of range
+        # Add common conditions based on status
         value = float(data.get('value', 0))
         range_vals = data.get('range', [None, None])
-
+        
         if range_vals and len(range_vals) == 2:
-            if value < range_vals[0] and 'low' in clinical_info.get('common_conditions', {}):
+            min_val, max_val = float(range_vals[0]), float(range_vals[1])
+            conditions = []
+            condition_title = ""
+            
+            if value < min_val and 'low' in clinical_info.get('common_conditions', {}):
                 conditions = clinical_info['common_conditions']['low']
-                condition_label = QLabel("Common conditions for low values:\n• " + "\n• ".join(conditions))
-                condition_label.setStyleSheet("color: #FFA500;")
-                detail_layout.addWidget(condition_label)
-            elif value > range_vals[1] and 'high' in clinical_info.get('common_conditions', {}):
+                condition_title = "Common conditions for low values:"
+            elif value > max_val and 'high' in clinical_info.get('common_conditions', {}):
                 conditions = clinical_info['common_conditions']['high']
-                condition_label = QLabel("Common conditions for high values:\n• " + "\n• ".join(conditions))
-                condition_label.setStyleSheet("color: #FFA500;")
-                detail_layout.addWidget(condition_label)
+                condition_title = "Common conditions for high values:"
+                
+            if conditions:
+                conditions_text = f"{condition_title}\n• " + "\n• ".join(conditions)
+                cond_label = QLabel(conditions_text)
+                cond_label.setWordWrap(True)
+                cond_label.setStyleSheet("color: #FFA500; font-size: 11px;")
+                sections_layout.addWidget(cond_label)
 
         # Add test requirements if available
         test_reqs = metadata.get('test_requirements', [])
         if test_reqs:
-            req_label = QLabel("Test Requirements:\n• " + "\n• ".join(test_reqs))
-            req_label.setStyleSheet("color: #666666;")
-            detail_layout.addWidget(req_label)
+            reqs_label = QLabel("Test Requirements:\n• " + "\n• ".join(test_reqs))
+            reqs_label.setWordWrap(True)
+            reqs_label.setStyleSheet("color: #666666; font-size: 11px;")
+            sections_layout.addWidget(reqs_label)
 
+        # Add the sections to the main layout
+        detail_layout.addWidget(sections_widget)
+        
         return detail_widget
 
     def _get_status_and_color(self, value, param_info):
