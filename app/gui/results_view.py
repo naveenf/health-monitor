@@ -158,8 +158,88 @@ class ResultsView(QWidget):
         # Update blood parameters
         self.update_blood_parameters(data.get('blood_parameters', {}))
 
+        # Add attention section for abnormal values
+        self._add_attention_section(data.get('blood_parameters', {}))
+
         # Add stretch at the end
         self.layout.addStretch()
+
+    def _add_attention_section(self, parameters):
+        """Adds a section highlighting values requiring attention"""
+        # Find parameters that are out of range
+        attention_params = []
+        
+        for name, data in parameters.items():
+            value = data.get('value', 'N/A')
+            if value != 'N/A':
+                try:
+                    value_float = float(value)
+                    status, _ = self._get_status_and_color(value_float, data)
+                    if status not in ["Normal", "No data", "Error"]:
+                        attention_params.append((name, data, status))
+                except (ValueError, TypeError):
+                    continue
+
+        if attention_params:
+            # Add section header
+            attention_header = QLabel("Values Requiring Attention")
+            attention_header.setStyleSheet("""
+                font-size: 16px;
+                font-weight: bold;
+                color: #4a148c;
+                padding: 15px 10px 10px 10px;
+                background-color: #f5f5f5;
+                border-bottom: 2px solid #4a148c;
+                margin-top: 20px;
+            """)
+            attention_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.layout.addWidget(attention_header)
+
+            # Create table for attention values
+            attention_table = QWidget()
+            table_layout = QVBoxLayout(attention_table)
+
+            for name, data, status in attention_params:
+                # Create entry for each parameter
+                param_widget = QWidget()
+                param_layout = QVBoxLayout(param_widget)
+
+                # Parameter header with value and status
+                header = QLabel(f"{name}: {data.get('value')} {data.get('unit', '')} - {status}")
+                header.setStyleSheet("font-weight: bold; color: #4a148c; padding: 5px;")
+                param_layout.addWidget(header)
+
+                # Add clinical implications
+                clinical_info = data.get('clinical_info', {})
+                conditions = clinical_info.get('common_conditions', {})
+                
+                if status.lower().find('low') != -1 and 'low' in conditions:
+                    implications = QLabel("Possible causes:\n• " + "\n• ".join(conditions['low']))
+                elif status.lower().find('high') != -1 and 'high' in conditions:
+                    implications = QLabel("Possible causes:\n• " + "\n• ".join(conditions['high']))
+                else:
+                    implications = QLabel("No additional information available")
+
+                implications.setStyleSheet("color: #666666; padding: 5px 20px;")
+                implications.setWordWrap(True)
+                param_layout.addWidget(implications)
+
+                # Add recommendations if available
+                if 'test_requirements' in data:
+                    reqs = data['test_requirements']
+                    if isinstance(reqs, list) and reqs:
+                        recommendations = QLabel("Recommendations:\n• " + "\n• ".join(reqs))
+                        recommendations.setStyleSheet("color: #666666; padding: 5px 20px;")
+                        recommendations.setWordWrap(True)
+                        param_layout.addWidget(recommendations)
+
+                table_layout.addWidget(param_widget)
+
+            # Add separator line between entries
+            table_layout.setSpacing(15)
+            
+            # Add the attention table to main layout
+            self.layout.addWidget(attention_table)
 
     def update_blood_parameters(self, parameters):
         """Updates the blood parameters display"""
@@ -189,15 +269,8 @@ class ResultsView(QWidget):
 
             # Add parameters
             for name, data in sorted(grouped_params[group]):
-                # Create main parameter row
-                param_container = QWidget()
-                param_layout = QVBoxLayout(param_container)
-                param_layout.setSpacing(0)  # Minimal spacing between elements
-                param_layout.setContentsMargins(0, 0, 0, 5)  # Add bottom margin only
-
-                # Parameter values row
-                values_widget = QWidget()
-                row_layout = QHBoxLayout(values_widget)
+                row_widget = QWidget()
+                row_layout = QHBoxLayout(row_widget)
                 row_layout.setContentsMargins(5, 2, 5, 2)
 
                 # Parameter name
@@ -242,17 +315,7 @@ class ResultsView(QWidget):
                 status_label.setFixedWidth(100)
                 row_layout.addWidget(status_label)
 
-                # Add the values row to the parameter container
-                param_layout.addWidget(values_widget)
-
-                # Add metadata if value is out of range
-                if status not in ["Normal", "No data", "Error"]:
-                    metadata_widget = self._create_parameter_detail_widget(name, data)
-                    if metadata_widget:
-                        param_layout.addWidget(metadata_widget)
-
-                # Add the complete parameter container to the group
-                group_layout.addWidget(param_container)
+                group_layout.addWidget(row_widget)
 
             self.layout.addWidget(group_widget)
 
