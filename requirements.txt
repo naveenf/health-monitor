@@ -4,3 +4,5 @@ transformers>=4.30.0
 numpy>=1.24.0
 pandas>=2.0.0
 pyinstaller>=5.13.0
+accelerate>=0.21.0
+bitsandbytes>=0.45.3

@@ -161,6 +161,10 @@ class ResultsView(QWidget):
         # Add attention section for abnormal values
         self._add_attention_section(data.get('blood_parameters', {}))
 
+        # Add AI analysis section if present in data
+        if 'ai_analysis' in data:
+            self.update_ai_analysis(data.get('ai_analysis', {}))
+
         # Add stretch at the end
         self.layout.addStretch()
 
@@ -427,3 +431,143 @@ class ResultsView(QWidget):
             'critical': ("Critical", "#FF0000")
         }
         return status_map.get(classification, ("Unknown", "#808080"))
+    
+    def update_ai_analysis(self, ai_analysis):
+        """
+        Updates the view with AI-powered analysis results.
+        
+        Args:
+            ai_analysis: Dictionary containing AI analysis results
+        """
+        if "error" in ai_analysis:
+            # Handle error case
+            error_widget = QWidget()
+            error_layout = QVBoxLayout(error_widget)
+            
+            error_header = QLabel("AI Analysis Unavailable")
+            error_header.setStyleSheet("font-weight: bold; color: #FF5722; padding: 5px;")
+            error_layout.addWidget(error_header)
+            
+            error_message = QLabel(ai_analysis.get("error", "Unknown error occurred."))
+            error_message.setWordWrap(True)
+            error_message.setStyleSheet("color: #666666; padding: 5px 20px;")
+            error_layout.addWidget(error_message)
+            
+            self.layout.addWidget(error_widget)
+            return
+        
+        # Create AI analysis section
+        ai_section = QWidget()
+        ai_layout = QVBoxLayout(ai_section)
+        
+        # Add section header
+        ai_header = QLabel("AI Analysis & Recommendations")
+        ai_header.setStyleSheet("""
+            font-size: 16px;
+            font-weight: bold;
+            color: #4a148c;
+            padding: 15px 10px 10px 10px;
+            background-color: #f5f5f5;
+            border-bottom: 2px solid #4a148c;
+            margin-top: 20px;
+        """)
+        ai_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        ai_layout.addWidget(ai_header)
+        
+        # Add summary section
+        if ai_analysis.get("summary"):
+            summary_widget = QWidget()
+            summary_layout = QVBoxLayout(summary_widget)
+            
+            summary_header = QLabel("Summary")
+            summary_header.setStyleSheet("font-weight: bold; color: #4a148c; padding: 5px;")
+            summary_layout.addWidget(summary_header)
+            
+            summary_text = QLabel(ai_analysis["summary"])
+            summary_text.setWordWrap(True)
+            summary_text.setStyleSheet("color: #333333; padding: 5px 20px;")
+            summary_layout.addWidget(summary_text)
+            
+            ai_layout.addWidget(summary_widget)
+        
+        # Add abnormal values section
+        if ai_analysis.get("abnormal_values"):
+            abnormal_widget = QWidget()
+            abnormal_layout = QVBoxLayout(abnormal_widget)
+            
+            abnormal_header = QLabel("Abnormal Values Analysis")
+            abnormal_header.setStyleSheet("font-weight: bold; color: #4a148c; padding: 5px;")
+            abnormal_layout.addWidget(abnormal_header)
+            
+            for item in ai_analysis["abnormal_values"]:
+                if item and len(item) > 5:  # Only add non-empty items
+                    item_label = QLabel(f"• {item}")
+                    item_label.setWordWrap(True)
+                    item_label.setStyleSheet("color: #333333; padding: 2px 20px;")
+                    abnormal_layout.addWidget(item_label)
+            
+            ai_layout.addWidget(abnormal_widget)
+        
+        # Add implications section
+        if ai_analysis.get("implications"):
+            implications_widget = QWidget()
+            implications_layout = QVBoxLayout(implications_widget)
+            
+            implications_header = QLabel("Health Implications")
+            implications_header.setStyleSheet("font-weight: bold; color: #4a148c; padding: 5px;")
+            implications_layout.addWidget(implications_header)
+            
+            for item in ai_analysis["implications"]:
+                if item and len(item) > 5:  # Only add non-empty items
+                    item_label = QLabel(f"• {item}")
+                    item_label.setWordWrap(True)
+                    item_label.setStyleSheet("color: #333333; padding: 2px 20px;")
+                    implications_layout.addWidget(item_label)
+            
+            ai_layout.addWidget(implications_widget)
+        
+        # Add recommendations section
+        if ai_analysis.get("recommendations"):
+            recommendations_widget = QWidget()
+            recommendations_layout = QVBoxLayout(recommendations_widget)
+            
+            recommendations_header = QLabel("Recommendations")
+            recommendations_header.setStyleSheet("font-weight: bold; color: #4a148c; padding: 5px;")
+            recommendations_layout.addWidget(recommendations_header)
+            
+            for item in ai_analysis["recommendations"]:
+                if item and len(item) > 5:  # Only add non-empty items
+                    item_label = QLabel(f"• {item}")
+                    item_label.setWordWrap(True)
+                    item_label.setStyleSheet("color: #333333; padding: 2px 20px;")
+                    recommendations_layout.addWidget(item_label)
+            
+            ai_layout.addWidget(recommendations_widget)
+        
+        # Add follow-up tests section
+        if ai_analysis.get("followup_tests"):
+            followup_widget = QWidget()
+            followup_layout = QVBoxLayout(followup_widget)
+            
+            followup_header = QLabel("Suggested Follow-up Tests")
+            followup_header.setStyleSheet("font-weight: bold; color: #4a148c; padding: 5px;")
+            followup_layout.addWidget(followup_header)
+            
+            for item in ai_analysis["followup_tests"]:
+                if item and len(item) > 5:  # Only add non-empty items
+                    item_label = QLabel(f"• {item}")
+                    item_label.setWordWrap(True)
+                    item_label.setStyleSheet("color: #333333; padding: 2px 20px;")
+                    followup_layout.addWidget(item_label)
+            
+            ai_layout.addWidget(followup_widget)
+        
+        # Add disclaimer
+        if "disclaimer" in ai_analysis:
+            disclaimer = QLabel(ai_analysis["disclaimer"])
+            disclaimer.setWordWrap(True)
+            disclaimer.setStyleSheet("color: #FF5722; font-style: italic; padding: 10px; font-size: 11px;")
+            ai_layout.addWidget(disclaimer)
+        
+        # Add the AI section to main layout
+        self.layout.addWidget(ai_section)
