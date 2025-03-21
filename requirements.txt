@@ -6,3 +6,4 @@ pandas>=2.0.0
 pyinstaller>=5.13.0
 accelerate>=0.21.0
 bitsandbytes>=0.45.3
+reportlab>=4.0.0

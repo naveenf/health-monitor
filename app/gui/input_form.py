@@ -3,8 +3,9 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLabel,
                              QComboBox, QCheckBox, QGroupBox,
                              QDateEdit, QSpinBox, QDoubleSpinBox,
                              QMessageBox, QScrollArea, QTabWidget,
-                             QHBoxLayout)
+                             QHBoxLayout, QFrame)
 from PyQt6.QtCore import pyqtSignal, Qt, QDate
+from PyQt6.QtGui import QFont, QColor
 from app.model.parameters.parameter_definitions import BLOOD_PARAMETERS
 
 
@@ -17,6 +18,38 @@ class PatientInfoSection(QGroupBox):
 
     def init_ui(self):
         layout = QFormLayout()
+        layout.setSpacing(12)  # Increase spacing
+        layout.setContentsMargins(15, 15, 15, 15)  # Add padding
+
+        # Apply a stylesheet to the group box
+        self.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                font-size: 14px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                margin-top: 15px;
+                background-color: #f8f9fa;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+            QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                background-color: white;
+                min-height: 25px;
+            }
+            QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDoubleSpinBox:focus {
+                border: 2px solid #4CAF50;
+            }
+            QLabel {
+                font-weight: bold;
+            }
+        """)
 
         # Name fields
         self.first_name = QLineEdit()
@@ -43,6 +76,15 @@ class PatientInfoSection(QGroupBox):
 
         # Fasting checkbox
         self.fasting_state = QCheckBox("Fasting State (8+ hours)")
+        self.fasting_state.setStyleSheet("""
+            QCheckBox {
+                spacing: 10px;
+            }
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+            }
+        """)
 
         # Add fields to layout
         layout.addRow("First Name*:", self.first_name)
@@ -65,11 +107,51 @@ class TestInfoSection(QGroupBox):
 
     def init_ui(self):
         layout = QFormLayout()
+        layout.setSpacing(12)
+        layout.setContentsMargins(15, 15, 15, 15)
+
+        # Apply the same styling as PatientInfoSection
+        self.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                font-size: 14px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                margin-top: 15px;
+                background-color: #f8f9fa;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+            QDateEdit, QLineEdit {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                background-color: white;
+                min-height: 25px;
+            }
+            QDateEdit:focus, QLineEdit:focus {
+                border: 2px solid #4CAF50;
+            }
+            QLabel {
+                font-weight: bold;
+            }
+        """)
 
         # Test date
         self.test_date = QDateEdit()
         self.test_date.setDate(QDate.currentDate())
         self.test_date.setCalendarPopup(True)
+        self.test_date.setStyleSheet("""
+            QDateEdit::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 20px;
+                border-left: 1px solid #ccc;
+            }
+        """)
 
         # Lab name
         self.lab_name = QLineEdit()
@@ -92,12 +174,71 @@ class BloodParametersSection(QGroupBox):
     def init_ui(self):
         # Main layout
         main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(15, 15, 15, 15)
         tabs = QTabWidget()
 
-        # Create tabs for each parameter group
+        # Style the tabs
+        tabs.setStyleSheet("""
+            QTabWidget::pane {
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                padding: 10px;
+                background-color: white;
+            }
+            QTabBar::tab {
+                background-color: #f0f0f0;
+                border: 1px solid #ccc;
+                border-bottom: none;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+                padding: 8px 12px;
+                margin-right: 2px;
+            }
+            QTabBar::tab:selected {
+                background-color: white;
+                border-bottom: 1px solid white;
+                font-weight: bold;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: #e0e0e0;
+            }
+            QLineEdit {
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                background-color: white;
+                min-height: 25px;
+            }
+            QLineEdit:focus {
+                border: 2px solid #4CAF50;
+            }
+            QLabel {
+                font-weight: bold;
+            }
+        """)
+
+        # Apply styling to the groupbox itself
+        self.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                font-size: 14px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                margin-top: 15px;
+                background-color: #f8f9fa;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 10px;
+                padding: 0 5px;
+            }
+        """)
+
+        # Continue with your existing code for creating tabs
         for group_name, group_data in BLOOD_PARAMETERS.items():
             tab = QWidget()
             form_layout = QFormLayout()
+            form_layout.setSpacing(12)
 
             # Sort parameters by order if available
             parameters = sorted(
@@ -105,11 +246,22 @@ class BloodParametersSection(QGroupBox):
                 key=lambda x: x[1].get('display', {}).get('order', float('inf'))
             )
 
-            # Add parameters for this group
+            # Create alternating row containers for zebra striping
+            row_index = 0
             for param_name, param_info in parameters:
+                # Create row container with alternating background
+                row_container = QWidget()
+                row_bg_color = "#f8f8f8" if row_index % 2 == 0 else "#ffffff"
+                row_container.setStyleSheet(f"background-color: {row_bg_color};")
+                row_layout = QHBoxLayout(row_container)
+                row_layout.setContentsMargins(5, 5, 5, 5)
+
                 # Create input field with validation
                 input_field = QLineEdit()
+                input_field.setFixedWidth(120)
+                input_field.setFixedHeight(24)
                 unit_label = QLabel(param_info['unit']['standard'])
+                unit_label.setStyleSheet("color: #333333; font-size: 11px;")
 
                 # Get ranges
                 ranges = param_info.get('ranges', {})
@@ -120,45 +272,43 @@ class BloodParametersSection(QGroupBox):
                 # Add standard range if available
                 if 'standard' in ranges:
                     std_range = ranges['standard']
-                    placeholder_parts.append(f"Standard: {std_range.get('min', 'N/A')}-{std_range.get('max', 'N/A')}")
+                    min_val = std_range.get('min', 'N/A')
+                    max_val = std_range.get('max', 'N/A')
+                    placeholder_parts.append(f"{min_val}-{max_val}")
 
-                # Add gender-specific ranges if available
-                if 'gender_specific' in ranges:
-                    gender_ranges = ranges['gender_specific']
-                    if 'male' in gender_ranges:
-                        male_range = gender_ranges['male']
-                        placeholder_parts.append(f"M: {male_range.get('min', 'N/A')}-{male_range.get('max', 'N/A')}")
-                    if 'female' in gender_ranges:
-                        female_range = gender_ranges['female']
-                        placeholder_parts.append(f"F: {female_range.get('min', 'N/A')}-{female_range.get('max', 'N/A')}")
-
-                placeholder = " | ".join(placeholder_parts) if placeholder_parts else "No range specified"
+                placeholder = "".join(placeholder_parts) if placeholder_parts else ""
                 input_field.setPlaceholderText(placeholder)
 
                 # Add tooltip with additional information
                 tooltip = self._create_tooltip(param_name, param_info)
                 input_field.setToolTip(tooltip)
 
-                # Create horizontal layout for input and unit
-                input_layout = QHBoxLayout()
-                input_layout.addWidget(input_field)
-                input_layout.addWidget(unit_label)
+                # Parameter name and input field
+                param_label = QLabel(f"{param_name}:")
+                param_label.setStyleSheet("color: #333333; font-size: 13px;")
+                param_label.setFixedWidth(180)
 
-                # Set fixed widths for better alignment
-                input_field.setFixedWidth(150)
-                unit_label.setFixedWidth(100)
+                # Range label
+                range_text = f"Range: {placeholder}" if placeholder else ""
+                range_label = QLabel(range_text)
+                range_label.setStyleSheet("color: #888888; font-size: 11px;")
+                range_label.setFixedWidth(130)
 
-                # Add to form layout with some spacing
-                label = QLabel(f"{param_name}:")
-                label.setFixedWidth(120)
-                form_layout.addRow(label, input_layout)
+                # Add to row layout
+                row_layout.addWidget(param_label)
+                row_layout.addWidget(input_field)
+                row_layout.addWidget(range_label)
+                row_layout.addWidget(unit_label)
+                row_layout.addStretch(1)  # Add stretch to push everything to the left
+
+                # Add row to form layout
+                form_layout.addRow(row_container)
 
                 # Store input field reference with full parameter name
                 self.parameter_inputs[param_name] = input_field
 
-            # Add some spacing to the form layout
-            form_layout.setSpacing(10)
-            form_layout.setContentsMargins(10, 10, 10, 10)
+                # Increment row index for alternating backgrounds
+                row_index += 1
 
             tab.setLayout(form_layout)
             tabs.addTab(tab, group_name)
@@ -170,21 +320,21 @@ class BloodParametersSection(QGroupBox):
         """Creates enhanced tooltip with detailed information"""
         # Create sections for the tooltip
         tooltip_sections = []
-        
+
         # Get basic metadata and clinical info
         metadata = param_info.get('metadata', {})
         clinical_info = param_info.get('clinical_info', {})
-        
+
         # Add description
-        description = metadata.get('description')
+        description = clinical_info.get('description')
         if description:
             tooltip_sections.append(description)
-        
+
         # Add function if available
         function = clinical_info.get('function')
         if function:
             tooltip_sections.append(f"\nFunction: {function}")
-        
+
         # Add common conditions
         conditions = clinical_info.get('common_conditions', {})
         if conditions:
@@ -195,7 +345,7 @@ class BloodParametersSection(QGroupBox):
             if 'low' in conditions:
                 low_conditions = ", ".join(conditions['low'])
                 tooltip_sections.append(f"Low: {low_conditions}")
-        
+
         # Add test requirements
         test_reqs = param_info.get('test_requirements', {})
         if isinstance(test_reqs, dict):  # If test_requirements is a dictionary
@@ -206,7 +356,7 @@ class BloodParametersSection(QGroupBox):
                 if test_reqs.get('special_requirements'):
                     for req in test_reqs['special_requirements']:
                         tooltip_sections.append(f"• {req}")
-                
+
                 # Add interfering factors if present
                 interfering = test_reqs.get('interfering_factors', [])
                 if interfering:
@@ -218,60 +368,27 @@ class BloodParametersSection(QGroupBox):
                 tooltip_sections.append("\nTest requirements:")
                 for req in test_reqs:
                     tooltip_sections.append(f"• {req}")
-        
+
         # Join all sections with newlines
         tooltip_text = "\n".join(tooltip_sections)
-        
+
         # If no content was added, provide a default message
         if not tooltip_text:
             tooltip_text = "No additional information available"
-        
+
         return tooltip_text
 
     def get_values(self):
         """Returns dictionary of all parameter values"""
         values = {}
         for param_name, input_field in self.parameter_inputs.items():
-            #print(f"Getting value for {param_name}")  # Debug print
             text = input_field.text().strip()
             if text:
                 try:
                     values[param_name] = float(text)
-                    #print(f"  Value: {values[param_name]}")  # Debug print
                 except ValueError:
-                    #print(f"  Invalid value for {param_name}: {text}")  # Debug print
                     pass
         return values
-
-    def _get_appropriate_range(self, param_info, patient_data):
-        """Gets the appropriate range based on patient characteristics"""
-        ranges = param_info.get('ranges', {})
-        gender = patient_data.get('gender', '').lower()
-        age = patient_data.get('age', 0)
-
-        # Check condition-specific ranges first (if implemented)
-        if 'condition_specific' in ranges:
-            # Logic for condition-specific ranges would go here
-            pass
-
-        # Check age-specific ranges
-        if 'age_specific' in ranges:
-            age_ranges = ranges['age_specific']
-            if age <= 1:
-                return age_ranges.get('newborn', {})
-            elif age <= 12:
-                return age_ranges.get('child', {})
-            elif age >= 65:
-                return age_ranges.get('elderly', {})
-            else:
-                return age_ranges.get('adult', {})
-
-        # Fall back to gender-specific ranges
-        if 'gender_specific' in ranges:
-            return ranges['gender_specific'].get(gender, {})
-
-        # Finally, fall back to standard range
-        return ranges.get('standard', {})
 
 
 class InputForm(QWidget):
@@ -289,9 +406,33 @@ class InputForm(QWidget):
         scroll.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
+        # Apply modern stylesheet to scroll area
+        scroll.setStyleSheet("""
+            QScrollArea {
+                border: none;
+                background-color: #f8f9fa;
+            }
+            QScrollBar:vertical {
+                border: none;
+                background: #f0f0f0;
+                width: 10px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: #6c757d;
+                min-height: 20px;
+                border-radius: 5px;
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """)
+
         # Create container widget
         container = QWidget()
         self.layout = QVBoxLayout(container)
+        self.layout.setContentsMargins(20, 20, 20, 20)  # Add more padding
+        self.layout.setSpacing(15)  # Increase spacing between elements
 
         # Add patient info section
         self.patient_info = PatientInfoSection()
@@ -307,23 +448,63 @@ class InputForm(QWidget):
 
         # Required fields note
         required_note = QLabel("* Required fields")
-        required_note.setStyleSheet("color: red;")
+        required_note.setStyleSheet("color: red; margin-top: 10px;")
         self.layout.addWidget(required_note)
 
-        # Add submit button
+        # Add submit button with improved styling
         self.submit_button = QPushButton("Submit Results")
+        self.submit_button.setMinimumHeight(40)  # Make button taller
+        self.submit_button.setStyleSheet("""
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                font-weight: bold;
+                font-size: 14px;
+                border: none;
+                border-radius: 5px;
+                padding: 10px 20px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+            QPushButton:pressed {
+                background-color: #3e8e41;
+            }
+        """)
         self.submit_button.clicked.connect(self.on_submit)
         self.layout.addWidget(self.submit_button)
 
-        # Add stretch at the end
-        self.layout.addStretch()
+        # Add some space at the bottom
+        self.layout.addSpacing(30)
 
         # Set the container as the scroll area's widget
         scroll.setWidget(container)
 
         # Main layout for the form
         main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.addWidget(scroll)
+
+        # Add AI analysis option
+        self.ai_analysis_checkbox = QCheckBox("Use AI analysis for recommendations")
+        self.ai_analysis_checkbox.setChecked(True)  # Enable by default
+        self.ai_analysis_checkbox.setStyleSheet("""
+            QCheckBox {
+                color: #666666;
+                margin-top: 5px;
+            }
+            QCheckBox::indicator {
+                width: 18px;
+                height: 18px;
+                border: 1px solid #6cad7a;
+                border-radius: 2px;
+            }
+            QCheckBox::indicator:checked {
+                background-color: #6cad7a;
+            }
+        """)
+        self.layout.addWidget(self.ai_analysis_checkbox)
+
 
     def _validate_required_fields(self) -> bool:
         """Validates that all required fields are filled"""
@@ -371,7 +552,10 @@ class InputForm(QWidget):
                     'date': self.test_info.test_date.date().toPyDate(),
                     'lab_name': self.test_info.lab_name.text()
                 },
-                'blood_parameters': {}
+                'blood_parameters': {},
+                'preferences': {
+                    'use_ai_analysis': self.ai_analysis_checkbox.isChecked()
+                }
             }
 
             # Add each parameter with its metadata and properly formatted ranges
@@ -455,5 +639,5 @@ class InputForm(QWidget):
         self.test_info.lab_name.clear()
 
         # Clear blood parameters
-        self.blood_params.rbc_input.clear()
-        self.blood_params.wbc_input.clear()
+        for input_field in self.blood_params.parameter_inputs.values():
+            input_field.clear()
