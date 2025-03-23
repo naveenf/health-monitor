@@ -63,6 +63,16 @@ class ResultsView(QWidget):
         # Initialize data to None
         self.current_data = None
 
+         # Add storage for formatted AI analysis that will be used for PDF generation
+        self.formatted_ai_analysis = {
+            "summary": "",
+            "abnormal_values": [],
+            "implications": [],
+            "recommendations": [],
+            "followup_tests": [],
+            "disclaimer": ""
+        }
+
         # Initialize PDF generator
         self.pdf_generator = PDFGenerator()
 
@@ -476,9 +486,31 @@ class ResultsView(QWidget):
         Args:
             ai_analysis: Dictionary containing AI analysis results
         """
+        # Initialize formatted AI analysis structure for PDF generation
+        self.formatted_ai_analysis = {
+            "summary": "",
+            "abnormal_values": [],
+            "implications": [],
+            "recommendations": [],
+            "followup_tests": [],
+            "disclaimer": "AI-generated analysis is for informational purposes only and should not replace professional medical advice."
+        }
+
         if not ai_analysis or "error" in ai_analysis:
             # If there's an error or no analysis, don't display anything
             return
+
+        # Store the AI analysis data for PDF generation
+        if "summary" in ai_analysis:
+            self.formatted_ai_analysis["summary"] = ai_analysis["summary"]
+        if "abnormal_values" in ai_analysis:
+            self.formatted_ai_analysis["abnormal_values"] = ai_analysis["abnormal_values"]
+        if "implications" in ai_analysis:
+            self.formatted_ai_analysis["implications"] = ai_analysis["implications"]
+        if "recommendations" in ai_analysis:
+            self.formatted_ai_analysis["recommendations"] = ai_analysis["recommendations"]
+        if "followup_tests" in ai_analysis:
+            self.formatted_ai_analysis["followup_tests"] = ai_analysis["followup_tests"]
 
         # Create AI analysis section
         ai_section = QWidget()
@@ -631,3 +663,34 @@ class ResultsView(QWidget):
         
         # Update the display with the combined data
         self.update_results(self.current_data)
+
+    def download_pdf(self):
+        """Generate and download a PDF report"""
+        if hasattr(self, 'current_data'):
+            # Create a copy of the data to avoid modifying the original
+            pdf_data = self.current_data.copy()
+            
+            # Replace the AI analysis with our formatted version that we know works
+            pdf_data['ai_analysis'] = self.formatted_ai_analysis
+            
+            # Debug what we're sending to PDF generator
+            print("\n===== SENDING TO PDF GENERATOR =====")
+            print(f"AI Analysis keys: {self.formatted_ai_analysis.keys()}")
+            for key, value in self.formatted_ai_analysis.items():
+                if isinstance(value, list):
+                    print(f"  {key}: {len(value)} items")
+                else:
+                    print(f"  {key}: {type(value)}")
+            print("====================================\n")
+            
+            # Create and use the PDF generator
+            from ..utils.pdf_generator import PDFGenerator
+            pdf_gen = PDFGenerator()
+            success = pdf_gen.generate_report(pdf_data)
+            
+            if success:
+                QMessageBox.information(self, "Success", "PDF report generated successfully.")
+            else:
+                QMessageBox.warning(self, "Error", "Failed to generate PDF report.")
+        else:
+            QMessageBox.warning(self, "No Data", "No data available to generate report.")
