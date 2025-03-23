@@ -613,3 +613,19 @@ class ResultsView(QWidget):
         except Exception as e:
             print(f"Error calculating status: {e}")
             return "Error", "#808080"
+    
+    def add_ai_analysis(self, ai_analysis):
+        """
+        Add AI analysis to an existing results display.
+        
+        Args:
+            ai_analysis: Dictionary containing AI analysis data
+        """
+        if not self.current_data:
+            return  # No data to update
+        
+        # Add AI analysis to current data
+        self.current_data["ai_analysis"] = ai_analysis
+        
+        # Update the display with the combined data
+        self.update_results(self.current_data)

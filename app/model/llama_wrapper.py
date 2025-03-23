@@ -1,3 +1,5 @@
+# app/model/llama_wrapper.py
+
 import os
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -6,6 +8,10 @@ import logging
 import re
 
 class LlamaWrapper:
+    # Class variable for caching
+    _model_cache = None
+    _tokenizer_cache = None
+    
     def __init__(self, model_path: str = None, device: str = None):
         """
         Initialize the Llama model wrapper.
@@ -29,6 +35,12 @@ class LlamaWrapper:
         self.model = None
         self.tokenizer = None
         
+        # Check for cached model
+        if LlamaWrapper._model_cache is not None:
+            self.logger.info("Using cached model")
+            self.model = LlamaWrapper._model_cache
+            self.tokenizer = LlamaWrapper._tokenizer_cache
+            
     def load_model(self) -> bool:
         """
         Load the Llama-3-8B-UltraMedical model and tokenizer.
@@ -36,6 +48,16 @@ class LlamaWrapper:
         Returns:
             bool: True if successfully loaded, False otherwise
         """
+        # If already loaded, return True
+        if self.model is not None:
+            return True
+            
+        # If cached model exists, use it
+        if LlamaWrapper._model_cache is not None:
+            self.model = LlamaWrapper._model_cache
+            self.tokenizer = LlamaWrapper._tokenizer_cache
+            return True
+            
         try:
             self.logger.info(f"Loading Medical model from {self.model_path}")
             self.logger.info(f"Using device: {self.device}")
@@ -43,7 +65,6 @@ class LlamaWrapper:
             print(f"Downloading/loading model from {self.model_path}. This may take a few minutes on first run...")
             
             # Create a dedicated models directory in your application folder
-            import os
             models_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models"))
             os.makedirs(models_dir, exist_ok=True)
             print(f"Using models directory: {models_dir}")
@@ -77,6 +98,10 @@ class LlamaWrapper:
                     trust_remote_code=True,
                     cache_dir=models_dir
                 )
+            
+            # Cache the model for future use
+            LlamaWrapper._model_cache = self.model
+            LlamaWrapper._tokenizer_cache = self.tokenizer
             
             self.logger.info("Model loaded successfully")
             print("Model loaded successfully!")
@@ -198,7 +223,6 @@ class LlamaWrapper:
     For each section, please be specific, detailed, and focus on clinical implications. Format each section with clear bullet points where appropriate."""
         
         return prompt
-
     
     def _format_blood_parameters(self, blood_parameters: Dict[str, Any]) -> str:
         """Format blood parameters for the prompt in a clean, readable format"""
@@ -228,6 +252,17 @@ class LlamaWrapper:
         Returns:
             Dictionary with structured insights and recommendations
         """
+        # Extract generated content from response
+        try:
+            response_content = response_text.split("Assistant:", 1)[1].strip()
+        except IndexError:
+            # If splitting fails, just use everything after the prompt
+            response_parts = response_text.split("follow-up tests if necessary", 1)
+            if len(response_parts) > 1:
+                response_content = response_parts[1].strip()
+            else:
+                response_content = response_text  # Fallback to using the whole text
+        
         # Basic structure for the response
         structured_response = {
             "summary": "",
@@ -237,110 +272,55 @@ class LlamaWrapper:
             "followup_tests": []
         }
         
-        # Try to find sections in the response
-        # Summary section
-        summary_match = re.search(r'(?:1\..*?summary|summary|overall health status)(?:\s*?:?\s*)(.*?)(?:(?:2\.)|$)', 
-                                response_text, re.DOTALL | re.IGNORECASE)
-        if summary_match:
-            summary_text = summary_match.group(1).strip()
-            # If summary text is too short, try to find a more complete section
-            if len(summary_text) < 30:
-                # Look for more text that might be part of the summary
-                extended_summary = re.search(r'(?:health status|assessment|summary).*?(.*?)(?:abnormal|analysis|section 2)', 
-                                        response_text, re.DOTALL | re.IGNORECASE)
-                if extended_summary:
-                    summary_text = extended_summary.group(1).strip()
+        # Enhanced parsing logic with section headers
+        lines = response_content.split('\n')
+        current_section = "summary"
+        section_buffer = []
+        
+        for i, line in enumerate(lines):
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Check for section headers
+            if "SUMMARY:" in line.upper():
+                current_section = "summary"
+                continue
+            elif "ABNORMAL VALUES:" in line.upper():
+                current_section = "abnormal_values"
+                continue
+            elif "HEALTH IMPLICATIONS:" in line.upper() or "IMPLICATIONS:" in line.upper():
+                current_section = "implications"
+                continue
+            elif "RECOMMENDATIONS:" in line.upper():
+                current_section = "recommendations"
+                continue
+            elif "FOLLOW-UP TESTS:" in line.upper() or "FOLLOWUP TESTS:" in line.upper():
+                current_section = "followup_tests"
+                continue
             
-            structured_response["summary"] = summary_text
-        
-        # Abnormal values section
-        abnormal_match = re.search(r'(?:2\..*?abnormal|abnormal values|analysis of abnormal)(?:\s*?:?\s*)(.*?)(?:(?:3\.)|(?:health implications)|$)', 
-                                response_text, re.DOTALL | re.IGNORECASE)
-        if abnormal_match:
-            abnormal_text = abnormal_match.group(1).strip()
-            # Extract bullet points or list items
-            abnormal_items = re.findall(r'(?:•|-|\*|\d+\.)\s*(.*?)(?=(?:•|-|\*|\d+\.)|$)', 
-                                    abnormal_text, re.DOTALL)
-            if abnormal_items and len(abnormal_items[0]) > 10:  # If we found meaningful bullet points
-                structured_response["abnormal_values"] = [item.strip() for item in abnormal_items if item.strip()]
-            else:
-                # If no bullet points or they're too short, use sentences
-                sentences = re.findall(r'([^.!?]+[.!?])', abnormal_text)
-                if sentences:
-                    structured_response["abnormal_values"] = [s.strip() for s in sentences if len(s.strip()) > 10]
+            # Process the line based on the current section
+            if current_section == "summary":
+                if structured_response["summary"]:
+                    structured_response["summary"] += " " + line
                 else:
-                    # If no sentences, use the whole text
-                    structured_response["abnormal_values"] = [abnormal_text] if len(abnormal_text) > 10 else ["No specific abnormal values analysis provided."]
-        
-        # Health implications section (similar pattern for all remaining sections)
-        implications_match = re.search(r'(?:3\..*?implications|potential health|health implications)(?:\s*?:?\s*)(.*?)(?:(?:4\.)|(?:recommendations)|$)', 
-                                    response_text, re.DOTALL | re.IGNORECASE)
-        if implications_match:
-            implications_text = implications_match.group(1).strip()
-            implications_items = re.findall(r'(?:•|-|\*|\d+\.)\s*(.*?)(?=(?:•|-|\*|\d+\.)|$)', 
-                                        implications_text, re.DOTALL)
-            if implications_items and len(implications_items[0]) > 10:
-                structured_response["implications"] = [item.strip() for item in implications_items if item.strip()]
+                    structured_response["summary"] = line
             else:
-                sentences = re.findall(r'([^.!?]+[.!?])', implications_text)
-                if sentences:
-                    structured_response["implications"] = [s.strip() for s in sentences if len(s.strip()) > 10]
-                else:
-                    structured_response["implications"] = [implications_text] if len(implications_text) > 10 else ["No specific health implications provided."]
-        
-        # Recommendations section
-        recommendations_match = re.search(r'(?:4\..*?recommend|lifestyle|dietary)(?:\s*?:?\s*)(.*?)(?:(?:5\.)|(?:follow)|(?:suggested)|$)', 
-                                        response_text, re.DOTALL | re.IGNORECASE)
-        if recommendations_match:
-            recommendations_text = recommendations_match.group(1).strip()
-            recommendations_items = re.findall(r'(?:•|-|\*|\d+\.)\s*(.*?)(?=(?:•|-|\*|\d+\.)|$)', 
-                                            recommendations_text, re.DOTALL)
-            if recommendations_items and len(recommendations_items[0]) > 10:
-                structured_response["recommendations"] = [item.strip() for item in recommendations_items if item.strip()]
-            else:
-                sentences = re.findall(r'([^.!?]+[.!?])', recommendations_text)
-                if sentences:
-                    structured_response["recommendations"] = [s.strip() for s in sentences if len(s.strip()) > 10]
-                else:
-                    structured_response["recommendations"] = [recommendations_text] if len(recommendations_text) > 10 else ["No specific recommendations provided."]
-        
-        # Follow-up tests section
-        followup_match = re.search(r'(?:5\..*?follow|suggested tests|additional tests|follow.*?up)(?:\s*?:?\s*)(.*?)(?:$|disclaimer)', 
-                                response_text, re.DOTALL | re.IGNORECASE)
-        if followup_match:
-            followup_text = followup_match.group(1).strip()
-            followup_items = re.findall(r'(?:•|-|\*|\d+\.)\s*(.*?)(?=(?:•|-|\*|\d+\.)|$)', 
-                                    followup_text, re.DOTALL)
-            if followup_items and len(followup_items[0]) > 10:
-                structured_response["followup_tests"] = [item.strip() for item in followup_items if item.strip()]
-            else:
-                sentences = re.findall(r'([^.!?]+[.!?])', followup_text)
-                if sentences:
-                    structured_response["followup_tests"] = [s.strip() for s in sentences if len(s.strip()) > 10]
-                else:
-                    structured_response["followup_tests"] = [followup_text] if len(followup_text) > 10 else ["No specific follow-up tests suggested."]
-        
-        # Clean up any "blockedContent" mentions that might appear
-        for key in structured_response:
-            if isinstance(structured_response[key], list):
-                structured_response[key] = [
-                    item.replace("blockedContent", "").strip() 
-                    for item in structured_response[key] 
-                    if "blockedContent" not in item or len(item.replace("blockedContent", "").strip()) > 10
-                ]
-                # If we filtered everything out, add a default message
-                if not structured_response[key]:
-                    structured_response[key] = ["No specific information provided."]
-            elif isinstance(structured_response[key], str):
-                if "blockedContent" in structured_response[key]:
-                    structured_response[key] = "No specific information provided."
-        
-        # Ensure each section has at least one entry
-        for key, value in structured_response.items():
-            if not value and key != "summary":
-                structured_response[key] = ["No specific information provided."]
-            elif key == "summary" and not value:
-                structured_response[key] = "No summary provided."
+                # For list sections, check for numbered bullets or other markers
+                if line[0].isdigit() and line[1:3] in ['. ', '- ', ') '] and line[3:].strip():
+                    # This is a new item in a numbered list
+                    structured_response[current_section].append(line[3:].strip())
+                elif line.startswith('- ') or line.startswith('• '):
+                    # This is a new item in a bulleted list
+                    structured_response[current_section].append(line[2:].strip())
+                elif structured_response[current_section] and line:
+                    # This is a continuation of the previous item
+                    idx = len(structured_response[current_section]) - 1
+                    if idx >= 0:
+                        structured_response[current_section][idx] += " " + line
+                elif line:
+                    # This is a new item without a bullet or number
+                    structured_response[current_section].append(line)
         
         return structured_response
     
