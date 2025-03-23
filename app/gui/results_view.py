@@ -144,7 +144,8 @@ class ResultsView(QWidget):
 
         patient_layout.addLayout(patient_grid)
         info_layout.addWidget(patient_box, 1)  # Equal width
-# Test Information Column
+        
+        # Test Information Column
         test_box = QWidget()
         test_box.setStyleSheet("""
             background-color: white;
@@ -242,15 +243,16 @@ class ResultsView(QWidget):
         results_layout.addWidget(content_widget)
         self.layout.addWidget(results_section)
 
-        # Add AI analysis section if present in data
+        # CHANGED ORDER: First add attention section for abnormal values
+        self._add_attention_section(data.get('blood_parameters', {}))
+
+        # THEN add AI analysis section if present in data
         if 'ai_analysis' in data:
             self._add_ai_analysis(data.get('ai_analysis', {}))
 
-        # Add attention section for abnormal values
-        self._add_attention_section(data.get('blood_parameters', {}))
-
         # Add stretch at the end
         self.layout.addStretch()
+        
     def download_as_pdf(self):
         """Handles PDF download button click"""
         if self.current_data:
