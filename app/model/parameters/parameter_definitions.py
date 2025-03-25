@@ -355,7 +355,14 @@ HEMOGLOBIN_PARAMETER = {
                 'min': 12.0,
                 'max': 15.5,
                 'critical_low': 7.0,
-                'critical_high': 20.0
+                'critical_high': 20.0,
+                'condition_specific': {
+                    'pregnancy': {
+                        'first_trimester': {'min': 11.0, 'max': 14.0},
+                        'second_trimester': {'min': 10.5, 'max': 14.0},
+                        'third_trimester': {'min': 11.0, 'max': 14.0}
+                    }
+                }
             }
         },
         'age_specific': {
@@ -365,13 +372,6 @@ HEMOGLOBIN_PARAMETER = {
             'adult_male': {'min': 13.5, 'max': 17.5},
             'adult_female': {'min': 12.0, 'max': 15.5},
             'elderly': {'min': 12.0, 'max': 16.0}
-        },
-        'condition_specific': {
-            'pregnancy': {
-                'first_trimester': {'min': 11.0, 'max': 14.0},
-                'second_trimester': {'min': 10.5, 'max': 14.0},
-                'third_trimester': {'min': 11.0, 'max': 14.0}
-            }
         }
     },
 
@@ -396,36 +396,55 @@ HEMOGLOBIN_PARAMETER = {
         'description': 'Protein in red blood cells that carries oxygen',
         'function': 'Transports oxygen from lungs to tissues and assists in carbon dioxide removal',
         'common_conditions': {
-            'high': [
-                'Polycythemia',
-                'Dehydration',
-                'Lung disease',
-                'Congenital heart disease',
-                'Living at high altitude'
-            ],
-            'low': [
-                'Anemia',
-                'Blood loss',
-                'Pregnancy',
-                'Chronic kidney disease',
-                'Nutritional deficiencies',
-                'Bone marrow disorders'
-            ]
+            'general': {
+                'high': [
+                    'Polycythemia',
+                    'Dehydration',
+                    'Lung disease',
+                    'Congenital heart disease',
+                    'Living at high altitude'
+                ],
+                'low': [
+                    'Anemia',
+                    'Blood loss',
+                    'Chronic kidney disease',
+                    'Nutritional deficiencies',
+                    'Bone marrow disorders'
+                ]
+            },
+            'female': {
+                'low': [
+                    'Pregnancy'
+                ]
+            },
+            'male': {
+                'high': [],
+                'low': []
+            }
         },
-        'risk_factors': [
-            'Smoking',
-            'High altitude living',
-            'Chronic diseases',
-            'Pregnancy',
-            'Nutritional status'
-        ],
-        'lifestyle_factors': [
-            'Diet (Iron intake)',
-            'Exercise',
-            'Smoking',
-            'Altitude',
-            'Hydration status'
-        ],
+        'risk_factors': {
+            'general': [
+                'Smoking',
+                'High altitude living',
+                'Chronic diseases',
+                'Nutritional status'
+            ],
+            'female': [
+                'Pregnancy'
+            ],
+            'male': []
+        },
+        'lifestyle_factors': {
+            'general': [
+                'Diet (Iron intake)',
+                'Exercise',
+                'Smoking',
+                'Altitude',
+                'Hydration status'
+            ],
+            'female': [],
+            'male': []
+        },
         'medications': {
             'affecting': [
                 'Iron supplements',
@@ -442,13 +461,17 @@ HEMOGLOBIN_PARAMETER = {
         'fasting_duration': 0,
         'time_of_day': 'any',
         'special_requirements': ['Standard venipuncture'],
-        'interfering_factors': [
-            'Recent exercise',
-            'Altitude',
-            'Smoking status',
-            'Hydration status',
-            'Recent blood transfusion'
-        ]
+        'interfering_factors': {
+            'general': [
+                'Recent exercise',
+                'Altitude',
+                'Smoking status',
+                'Hydration status',
+                'Recent blood transfusion'
+            ],
+            'female': [],
+            'male': []
+        }
     },
 
     'result_handling': {
@@ -522,7 +545,14 @@ HEMATOCRIT_PARAMETER = {
                 'min': 36,
                 'max': 48,
                 'critical_low': 21,
-                'critical_high': 60
+                'critical_high': 60,
+                'condition_specific': {
+                    'pregnancy': {
+                        'first_trimester': {'min': 33, 'max': 42},
+                        'second_trimester': {'min': 32, 'max': 42},
+                        'third_trimester': {'min': 33, 'max': 42}
+                    }
+                }
             }
         },
         'age_specific': {
@@ -532,13 +562,6 @@ HEMATOCRIT_PARAMETER = {
             'adult_male': {'min': 41, 'max': 50},
             'adult_female': {'min': 36, 'max': 48},
             'elderly': {'min': 35, 'max': 47}
-        },
-        'condition_specific': {
-            'pregnancy': {
-                'first_trimester': {'min': 33, 'max': 42},
-                'second_trimester': {'min': 32, 'max': 42},
-                'third_trimester': {'min': 33, 'max': 42}
-            }
         }
     },
 
@@ -563,35 +586,54 @@ HEMATOCRIT_PARAMETER = {
         'description': 'Percentage of blood volume that is red blood cells',
         'function': 'Indicates the proportion of blood composed of red blood cells',
         'common_conditions': {
-            'high': [
-                'Dehydration',
-                'Polycythemia',
-                'COPD',
-                'Congenital heart disease',
-                'High altitude adaptation'
-            ],
-            'low': [
-                'Anemia',
-                'Blood loss',
-                'Pregnancy',
-                'Hemodilution',
-                'Bone marrow failure',
-                'Nutritional deficiencies'
-            ]
+            'general': {
+                'high': [
+                    'Dehydration',
+                    'Polycythemia',
+                    'COPD',
+                    'Congenital heart disease',
+                    'High altitude adaptation'
+                ],
+                'low': [
+                    'Anemia',
+                    'Blood loss',
+                    'Hemodilution',
+                    'Bone marrow failure',
+                    'Nutritional deficiencies'
+                ]
+            },
+            'female': {
+                'low': [
+                    'Pregnancy'
+                ]
+            },
+            'male': {
+                'high': [],
+                'low': []
+            }
         },
-        'risk_factors': [
-            'Dehydration',
-            'High altitude',
-            'Pregnancy',
-            'Chronic lung disease',
-            'Smoking'
-        ],
-        'lifestyle_factors': [
-            'Hydration status',
-            'Physical activity',
-            'Altitude',
-            'Smoking status'
-        ],
+        'risk_factors': {
+            'general': [
+                'Dehydration',
+                'High altitude',
+                'Chronic lung disease',
+                'Smoking'
+            ],
+            'female': [
+                'Pregnancy'
+            ],
+            'male': []
+        },
+        'lifestyle_factors': {
+            'general': [
+                'Hydration status',
+                'Physical activity',
+                'Altitude',
+                'Smoking status'
+            ],
+            'female': [],
+            'male': []
+        },
         'medications': {
             'affecting': [
                 'Diuretics',
@@ -608,13 +650,18 @@ HEMATOCRIT_PARAMETER = {
         'fasting_duration': 0,
         'time_of_day': 'any',
         'special_requirements': ['Standard venipuncture'],
-        'interfering_factors': [
-            'Hydration status',
-            'Altitude',
-            'Pregnancy',
-            'Recent transfusion',
-            'Body position during collection'
-        ]
+        'interfering_factors': {
+            'general': [
+                'Hydration status',
+                'Altitude',
+                'Recent transfusion',
+                'Body position during collection'
+            ],
+            'female': [
+                'Pregnancy'
+            ],
+            'male': []
+        }
     },
 
     'result_handling': {
@@ -688,7 +735,14 @@ PLATELETS_PARAMETER = {
                 'min': 150000,
                 'max': 450000,
                 'critical_low': 20000,
-                'critical_high': 1000000
+                'critical_high': 1000000,
+                'condition_specific': {
+                    'pregnancy': {
+                        'first_trimester': {'min': 150000, 'max': 400000},
+                        'second_trimester': {'min': 150000, 'max': 400000},
+                        'third_trimester': {'min': 100000, 'max': 400000}
+                    }
+                }
             }
         },
         'age_specific': {
@@ -696,13 +750,6 @@ PLATELETS_PARAMETER = {
             'child': {'min': 150000, 'max': 450000},
             'adult': {'min': 150000, 'max': 450000},
             'elderly': {'min': 150000, 'max': 400000}
-        },
-        'condition_specific': {
-            'pregnancy': {
-                'first_trimester': {'min': 150000, 'max': 400000},
-                'second_trimester': {'min': 150000, 'max': 400000},
-                'third_trimester': {'min': 100000, 'max': 400000}
-            }
         }
     },
 
@@ -727,36 +774,54 @@ PLATELETS_PARAMETER = {
         'description': 'Blood cells that help with blood clotting',
         'function': 'Essential for blood clotting and prevention of bleeding',
         'common_conditions': {
-            'high': [
-                'Inflammation',
-                'Cancer',
-                'Iron deficiency',
-                'Post-splenectomy',
-                'Essential thrombocythemia'
-            ],
-            'low': [
-                'Viral infections',
-                'Some medications',
-                'Leukemia',
-                'ITP',
-                'Aplastic anemia',
-                'Chemotherapy'
-            ]
+            'general': {
+                'high': [
+                    'Inflammation',
+                    'Cancer',
+                    'Iron deficiency',
+                    'Post-splenectomy',
+                    'Essential thrombocythemia'
+                ],
+                'low': [
+                    'Viral infections',
+                    'Some medications',
+                    'Leukemia',
+                    'ITP',
+                    'Aplastic anemia',
+                    'Chemotherapy'
+                ]
+            },
+            'female': {
+                'high': [],
+                'low': []
+            },
+            'male': {
+                'high': [],
+                'low': []
+            }
         },
-        'risk_factors': [
-            'Autoimmune conditions',
-            'Certain medications',
-            'Bone marrow disorders',
-            'Spleen problems',
-            'Chronic infections'
-        ],
-        'lifestyle_factors': [
-            'Exercise',
-            'Alcohol consumption',
-            'Smoking',
-            'Diet',
-            'Stress levels'
-        ],
+        'risk_factors': {
+            'general': [
+                'Autoimmune conditions',
+                'Certain medications',
+                'Bone marrow disorders',
+                'Spleen problems',
+                'Chronic infections'
+            ],
+            'female': [],
+            'male': []
+        },
+        'lifestyle_factors': {
+            'general': [
+                'Exercise',
+                'Alcohol consumption',
+                'Smoking',
+                'Diet',
+                'Stress levels'
+            ],
+            'female': [],
+            'male': []
+        },
         'medications': {
             'affecting': [
                 'Heparin',
@@ -777,14 +842,19 @@ PLATELETS_PARAMETER = {
             'Gentle mixing',
             'No shaking'
         ],
-        'interfering_factors': [
-            'Recent exercise',
-            'Pregnancy',
-            'Medications (heparin, chemotherapy)',
-            'Sample clotting',
-            'Collection technique',
-            'Time of day'
-        ]
+        'interfering_factors': {
+            'general': [
+                'Recent exercise',
+                'Medications (heparin, chemotherapy)',
+                'Sample clotting',
+                'Collection technique',
+                'Time of day'
+            ],
+            'female': [
+                'Pregnancy'
+            ],
+            'male': []
+        }
     },
 
     'result_handling': {
@@ -1323,8 +1393,8 @@ HDL_PARAMETER = {
         'standard': {
             'min': 40,
             'max': 90,
-            'critical_low': 20,  # Indicates very high cardiovascular risk
-            'critical_high': 100  # Extremely high HDL needs investigation
+            'critical_low': 20,
+            'critical_high': 100
         },
         'gender_specific': {
             'male': {
@@ -1374,38 +1444,56 @@ HDL_PARAMETER = {
         'description': '"Good" cholesterol that helps remove excess cholesterol from blood vessels',
         'function': 'Transports excess cholesterol from tissues to liver for processing',
         'common_conditions': {
-            'low': [
-                'Cardiovascular disease risk',
-                'Metabolic syndrome',
-                'Type 2 diabetes',
-                'Obesity',
-                'Physical inactivity',
-                'Smoking',
-                'Inflammation'
-            ],
-            'high': [
-                'Generally beneficial',
-                'Genetic variants (some rare conditions)',
-                'Regular physical activity',
-                'Healthy diet',
-                'Moderate alcohol consumption'
-            ]
+            'general': {
+                'low': [
+                    'Cardiovascular disease risk',
+                    'Metabolic syndrome',
+                    'Type 2 diabetes',
+                    'Obesity',
+                    'Physical inactivity',
+                    'Smoking',
+                    'Inflammation'
+                ],
+                'high': [
+                    'Generally beneficial',
+                    'Genetic variants (some rare conditions)',
+                    'Regular physical activity',
+                    'Healthy diet',
+                    'Moderate alcohol consumption'
+                ]
+            },
+            'female': {
+                'low': [],
+                'high': []
+            },
+            'male': {
+                'low': [],
+                'high': []
+            }
         },
-        'risk_factors': [
-            'Sedentary lifestyle',
-            'Poor diet',
-            'Smoking',
-            'Obesity',
-            'Genetic factors',
-            'Certain medications'
-        ],
-        'lifestyle_factors': [
-            'Regular exercise increases HDL',
-            'Mediterranean diet beneficial',
-            'Smoking decreases HDL',
-            'Weight loss can increase HDL',
-            'Moderate alcohol may increase HDL'
-        ],
+        'risk_factors': {
+            'general': [
+                'Sedentary lifestyle',
+                'Poor diet',
+                'Smoking',
+                'Obesity',
+                'Genetic factors',
+                'Certain medications'
+            ],
+            'female': [],
+            'male': []
+        },
+        'lifestyle_factors': {
+            'general': [
+                'Regular exercise increases HDL',
+                'Mediterranean diet beneficial',
+                'Smoking decreases HDL',
+                'Weight loss can increase HDL',
+                'Moderate alcohol may increase HDL'
+            ],
+            'female': [],
+            'male': []
+        },
         'medications': {
             'affecting': [
                 'Statins',
@@ -1432,13 +1520,17 @@ HDL_PARAMETER = {
             'Avoid high-fat meals day before',
             'Avoid alcohol for 24 hours'
         ],
-        'interfering_factors': [
-            'Recent exercise',
-            'Recent alcohol consumption',
-            'Medications',
-            'Acute illness',
-            'Recent significant weight change'
-        ]
+        'interfering_factors': {
+            'general': [
+                'Recent exercise',
+                'Recent alcohol consumption',
+                'Medications',
+                'Acute illness',
+                'Recent significant weight change'
+            ],
+            'female': [],
+            'male': []
+        }
     },
 
     'result_handling': {
@@ -1675,8 +1767,25 @@ VITAMIN_D_PARAMETER = {
         'standard': {
             'min': 30,
             'max': 100,
-            'critical_low': 10,  # Severe deficiency requiring immediate treatment
-            'critical_high': 150  # Risk of toxicity
+            'critical_low': 10,
+            'critical_high': 150
+        },
+        'gender_specific': {
+            'male': {
+                'min': 30,
+                'max': 100,
+                'critical_low': 10,
+                'critical_high': 150
+            },
+            'female': {
+                'min': 30,
+                'max': 100,
+                'critical_low': 10,
+                'critical_high': 150,
+                'condition_specific': {
+                    'pregnancy': {'min': 40, 'max': 100}
+                }
+            }
         },
         'age_specific': {
             'infant': {'min': 20, 'max': 60},
@@ -1686,7 +1795,6 @@ VITAMIN_D_PARAMETER = {
         },
         'condition_specific': {
             'osteoporosis': {'min': 40, 'max': 100},
-            'pregnancy': {'min': 40, 'max': 100},
             'chronic_kidney_disease': {'min': 30, 'max': 100},
             'obesity': {'min': 40, 'max': 100}  # Higher targets due to reduced bioavailability
         }
@@ -1713,40 +1821,62 @@ VITAMIN_D_PARAMETER = {
         'description': 'Fat-soluble vitamin essential for bone health, immune function, and cellular growth',
         'function': 'Calcium absorption, bone mineralization, immune regulation, cell differentiation',
         'common_conditions': {
-            'low': [
-                'Osteoporosis',
-                'Rickets',
-                'Osteomalacia',
+            'general': {
+                'low': [
+                    'Osteoporosis',
+                    'Rickets',
+                    'Osteomalacia',
+                    'Limited sun exposure',
+                    'Dark skin',
+                    'Obesity',
+                    'Malabsorption disorders',
+                    'Chronic kidney disease'
+                ],
+                'high': [
+                    'Excessive supplementation',
+                    'Granulomatous disorders',
+                    'Primary hyperparathyroidism',
+                    'Williams syndrome'
+                ]
+            },
+            'female': {
+                'low': [
+                    'Pregnancy'
+                ],
+                'high': []
+            },
+            'male': {
+                'low': [],
+                'high': []
+            }
+        },
+        'risk_factors': {
+            'general': [
                 'Limited sun exposure',
+                'Northern latitudes',
                 'Dark skin',
                 'Obesity',
-                'Malabsorption disorders',
-                'Chronic kidney disease'
+                'Poor diet',
+                'Age > 65',
+                'Malabsorption disorders'
             ],
-            'high': [
-                'Excessive supplementation',
-                'Granulomatous disorders',
-                'Primary hyperparathyroidism',
-                'Williams syndrome'
-            ]
+            'female': [
+                'Pregnancy'
+            ],
+            'male': []
         },
-        'risk_factors': [
-            'Limited sun exposure',
-            'Northern latitudes',
-            'Dark skin',
-            'Obesity',
-            'Poor diet',
-            'Age > 65',
-            'Malabsorption disorders'
-        ],
-        'lifestyle_factors': [
-            'Sunlight exposure',
-            'Diet (fatty fish, fortified foods)',
-            'Sunscreen use',
-            'Indoor lifestyle',
-            'Clothing coverage',
-            'Geographic location'
-        ],
+        'lifestyle_factors': {
+            'general': [
+                'Sunlight exposure',
+                'Diet (fatty fish, fortified foods)',
+                'Sunscreen use',
+                'Indoor lifestyle',
+                'Clothing coverage',
+                'Geographic location'
+            ],
+            'female': [],
+            'male': []
+        },
         'medications': {
             'affecting': [
                 'Anticonvulsants',
@@ -1770,14 +1900,18 @@ VITAMIN_D_PARAMETER = {
             'No special timing required',
             'Recent sunlight exposure may affect levels'
         ],
-        'interfering_factors': [
-            'Season',
-            'Latitude',
-            'Time of day',
-            'Skin pigmentation',
-            'Sunscreen use',
-            'Recent travel'
-        ]
+        'interfering_factors': {
+            'general': [
+                'Season',
+                'Latitude',
+                'Time of day',
+                'Skin pigmentation',
+                'Sunscreen use',
+                'Recent travel'
+            ],
+            'female': [],
+            'male': []
+        }
     },
 
     'result_handling': {
@@ -1842,8 +1976,25 @@ VITAMIN_B12_PARAMETER = {
         'standard': {
             'min': 200,
             'max': 900,
-            'critical_low': 100,  # Severe deficiency - risk of neurological complications
-            'critical_high': 2000  # Suggests possible B12 overload or malignancy
+            'critical_low': 100,
+            'critical_high': 2000
+        },
+        'gender_specific': {
+            'male': {
+                'min': 200,
+                'max': 900,
+                'critical_low': 100,
+                'critical_high': 2000
+            },
+            'female': {
+                'min': 200,
+                'max': 900,
+                'critical_low': 100,
+                'critical_high': 2000,
+                'condition_specific': {
+                    'pregnancy': {'min': 300, 'max': 900}
+                }
+            }
         },
         'age_specific': {
             'infant': {'min': 200, 'max': 900},
@@ -1852,7 +2003,6 @@ VITAMIN_B12_PARAMETER = {
             'elderly': {'min': 300, 'max': 900}  # Higher minimum due to decreased absorption
         },
         'condition_specific': {
-            'pregnancy': {'min': 300, 'max': 900},
             'vegan_diet': {'min': 300, 'max': 900},
             'pernicious_anemia': {'min': 300, 'max': 900},
             'gastric_surgery': {'min': 300, 'max': 900}
@@ -1880,38 +2030,60 @@ VITAMIN_B12_PARAMETER = {
         'description': 'Essential vitamin for nerve function, DNA synthesis, and red blood cell formation',
         'function': 'DNA synthesis, nerve myelination, red blood cell formation, homocysteine metabolism',
         'common_conditions': {
-            'low': [
-                'Pernicious anemia',
-                'Veganism/vegetarianism',
-                'Gastric surgery',
-                'Celiac disease',
-                'Crohn\'s disease',
-                'Elderly age',
-                'H. pylori infection',
-                'Metformin use'
-            ],
-            'high': [
-                'B12 supplementation',
-                'Liver disease',
-                'Myeloproliferative disorders',
-                'Severe liver disease'
-            ]
+            'general': {
+                'low': [
+                    'Pernicious anemia',
+                    'Veganism/vegetarianism',
+                    'Gastric surgery',
+                    'Celiac disease',
+                    'Crohn\'s disease',
+                    'Elderly age',
+                    'H. pylori infection',
+                    'Metformin use'
+                ],
+                'high': [
+                    'B12 supplementation',
+                    'Liver disease',
+                    'Myeloproliferative disorders',
+                    'Severe liver disease'
+                ]
+            },
+            'female': {
+                'low': [
+                    'Pregnancy'
+                ],
+                'high': []
+            },
+            'male': {
+                'low': [],
+                'high': []
+            }
         },
-        'risk_factors': [
-            'Vegan/vegetarian diet',
-            'Age > 60',
-            'Gastric surgery',
-            'Autoimmune disorders',
-            'Chronic alcoholism',
-            'Metformin use',
-            'Proton pump inhibitors'
-        ],
-        'lifestyle_factors': [
-            'Dietary intake of animal products',
-            'Alcohol consumption',
-            'Strict vegetarian/vegan diet',
-            'Use of supplements'
-        ],
+        'risk_factors': {
+            'general': [
+                'Vegan/vegetarian diet',
+                'Age > 60',
+                'Gastric surgery',
+                'Autoimmune disorders',
+                'Chronic alcoholism',
+                'Metformin use',
+                'Proton pump inhibitors'
+            ],
+            'female': [
+                'Pregnancy'
+            ],
+            'male': []
+        },
+        'lifestyle_factors': {
+            'general': [
+                'Dietary intake of animal products',
+                'Alcohol consumption',
+                'Strict vegetarian/vegan diet',
+                'Use of supplements'
+            ],
+            'female': [],
+            'male': []
+        },
         'medications': {
             'affecting': [
                 'Metformin',
@@ -1935,13 +2107,17 @@ VITAMIN_B12_PARAMETER = {
             'Stop B12 supplements 48 hours before test',
             'Morning collection preferred'
         ],
-        'interfering_factors': [
-            'Recent B12 supplementation',
-            'Recent meal high in animal protein',
-            'Folate deficiency',
-            'Multiple myeloma',
-            'Liver disease'
-        ]
+        'interfering_factors': {
+            'general': [
+                'Recent B12 supplementation',
+                'Recent meal high in animal protein',
+                'Folate deficiency',
+                'Multiple myeloma',
+                'Liver disease'
+            ],
+            'female': [],
+            'male': []
+        }
     },
 
     'result_handling': {
@@ -1988,7 +2164,6 @@ VITAMIN_B12_PARAMETER = {
         'decimal_display': 0
     }
 }
-
 IRON_PARAMETER = {
     'id': 'IRON',
     'name': 'Iron',
@@ -2007,8 +2182,8 @@ IRON_PARAMETER = {
         'standard': {
             'min': 60,
             'max': 170,
-            'critical_low': 30,  # Severe iron deficiency
-            'critical_high': 400  # Risk of iron toxicity
+            'critical_low': 30,
+            'critical_high': 400
         },
         'gender_specific': {
             'male': {
@@ -2021,7 +2196,15 @@ IRON_PARAMETER = {
                 'min': 50,
                 'max': 170,
                 'critical_low': 30,
-                'critical_high': 400
+                'critical_high': 400,
+                'condition_specific': {
+                    'pregnancy': {
+                        'first_trimester': {'min': 40, 'max': 170},
+                        'second_trimester': {'min': 35, 'max': 145},
+                        'third_trimester': {'min': 30, 'max': 140}
+                    },
+                    'menstruation': {'min': 50, 'max': 170}
+                }
             }
         },
         'age_specific': {
@@ -2034,12 +2217,6 @@ IRON_PARAMETER = {
             'elderly': {'min': 50, 'max': 150}
         },
         'condition_specific': {
-            'pregnancy': {
-                'first_trimester': {'min': 40, 'max': 170},
-                'second_trimester': {'min': 35, 'max': 145},
-                'third_trimester': {'min': 30, 'max': 140}
-            },
-            'menstruation': {'min': 50, 'max': 170},
             'inflammatory_conditions': {'min': 40, 'max': 150}
         }
     },
@@ -2066,41 +2243,61 @@ IRON_PARAMETER = {
         'description': 'Essential mineral for oxygen transport and cellular energy production',
         'function': 'Hemoglobin synthesis, oxygen transport, cellular metabolism, enzyme function',
         'common_conditions': {
-            'low': [
-                'Iron deficiency anemia',
-                'Chronic blood loss',
-                'Malabsorption',
-                'Heavy menstruation',
-                'Pregnancy',
-                'Chronic inflammation',
-                'Celiac disease',
-                'H. pylori infection'
-            ],
-            'high': [
-                'Hemochromatosis',
-                'Multiple transfusions',
-                'Iron supplementation',
-                'Hemolysis',
-                'Acute liver injury',
-                'Lead poisoning'
-            ]
+            'general': {
+                'high': [
+                    'Hemochromatosis',
+                    'Multiple transfusions',
+                    'Iron supplementation',
+                    'Hemolysis',
+                    'Acute liver injury',
+                    'Lead poisoning'
+                ],
+                'low': [
+                    'Iron deficiency anemia',
+                    'Chronic blood loss',
+                    'Malabsorption',
+                    'Chronic inflammation',
+                    'Celiac disease',
+                    'H. pylori infection'
+                ]
+            },
+            'female': {
+                'low': [
+                    'Heavy menstruation',
+                    'Pregnancy'
+                ]
+            },
+            'male': {
+                'high': [],
+                'low': []
+            }
         },
-        'risk_factors': [
-            'Menstruation',
-            'Pregnancy',
-            'Vegetarian/vegan diet',
-            'Blood donation',
-            'Gastrointestinal disorders',
-            'Chronic disease',
-            'Endurance athletes'
-        ],
-        'lifestyle_factors': [
-            'Dietary iron intake',
-            'Vitamin C consumption',
-            'Tea/coffee consumption',
-            'Physical activity level',
-            'Menstrual status'
-        ],
+        'risk_factors': {
+            'general': [
+                'Vegetarian/vegan diet',
+                'Blood donation',
+                'Gastrointestinal disorders',
+                'Chronic disease',
+                'Endurance athletes'
+            ],
+            'female': [
+                'Menstruation',
+                'Pregnancy'
+            ],
+            'male': []
+        },
+        'lifestyle_factors': {
+            'general': [
+                'Dietary iron intake',
+                'Vitamin C consumption',
+                'Tea/coffee consumption',
+                'Physical activity level'
+            ],
+            'female': [
+                'Menstrual status'
+            ],
+            'male': []
+        },
         'medications': {
             'affecting': [
                 'Iron supplements',
@@ -2125,14 +2322,20 @@ IRON_PARAMETER = {
             'Fasting for 12 hours',
             'Stop iron supplements 24 hours before'
         ],
-        'interfering_factors': [
-            'Recent meals',
-            'Time of day',
-            'Recent iron supplementation',
-            'Inflammation',
-            'Infection',
-            'Recent transfusion'
-        ]
+        'interfering_factors': {
+            'general': [
+                'Recent meals',
+                'Time of day',
+                'Recent iron supplementation',
+                'Inflammation',
+                'Infection',
+                'Recent transfusion'
+            ],
+            'female': [
+                'Pregnancy'
+            ],
+            'male': []
+        }
     },
 
     'result_handling': {
